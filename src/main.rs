@@ -6,7 +6,7 @@ use std::process::{exit, Command, Output};
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Args {
-    #[clap(short, long, default_value_t = 64)]
+    #[clap(short, long, default_value_t = 32)]
     audio_bitrate: u16,
 
     /// factor to divide X/Y resolution by
@@ -93,7 +93,7 @@ fn main() {
         .arg("-vf")
         .arg(&scale_filter)
         .arg("-c:a")
-        .arg("aac")
+        .arg("libopus")
         .arg("-b:a")
         .arg(&audio_bitrate)
         .arg(&output_file)
