@@ -21,19 +21,30 @@ struct Args {
     input_file: String,
 
     #[clap(short, long, required = false)]
-    output_file: String,
+    output_file: Option<String>,
+}
+
+fn calculate_video_bitrate(
+    video_duration: usize,
+    target_filesize: f32,
+    audio_bitrate: u16,
+) -> usize {
+    let total_bitrate = (target_filesize * 0.9536 * 8192.0) / video_duration as f32;
+    (total_bitrate - audio_bitrate as f32) as usize
 }
 
 fn main() {
     let args = Args::parse();
 
-    println!("bitrate: {}", args.audio_bitrate);
-    println!("div: {}", args.div);
-    println!("target filesize: {}", args.target_filesize);
+    let video_duration = get_video_duration(&args.input_file);
+    let video_bitrate = calculate_video_bitrate(video_duration, args.target_filesize, args.audio_bitrate);
+    let video_bitrate = format!("{}k", video_bitrate);
 
-    let bitrate = "400k";
     let audio_bitrate = format!("{}k", args.audio_bitrate);
-    let scale = format!("scale=iw/{}:-1", args.div);
+
+    let output_file = args.output_file.unwrap_or("out.mp4".to_owned());
+
+    let scale_filter = format!("scale=iw/{}:-1", args.div);
 
     let dev_null = if cfg!(target_os = "windows") {
         "NUL"
@@ -41,7 +52,11 @@ fn main() {
         "/dev/null"
     };
 
-    // pass 1
+    println!("aiming for filesize < {}MiB", &args.target_filesize);
+    println!("scaling video down to 1/{} x/y resolution", &args.div);
+    println!("new audio bitrate: {}", &audio_bitrate);
+    println!("new video bitrate: {}", &video_bitrate);
+
     println!("running ffmpeg pass 1");
     let mut output = Command::new("ffmpeg")
         .arg("-y")
@@ -50,11 +65,11 @@ fn main() {
         .arg("-c:v")
         .arg("libx264")
         .arg("-b:v")
-        .arg(bitrate)
+        .arg(&video_bitrate)
         .arg("-pass")
         .arg("1")
         .arg("-vf")
-        .arg(&scale)
+        .arg(&scale_filter)
         .arg("-vsync")
         .arg("cfr")
         .arg("-f")
@@ -65,7 +80,6 @@ fn main() {
     exit_on_error(&output);
 
     println!("running ffmpeg pass 2");
-
     output = Command::new("ffmpeg")
         .arg("-y")
         .arg("-i")
@@ -73,16 +87,16 @@ fn main() {
         .arg("-c:v")
         .arg("libx264")
         .arg("-b:v")
-        .arg(bitrate)
+        .arg(&video_bitrate)
         .arg("-pass")
         .arg("2")
         .arg("-vf")
-        .arg(&scale)
+        .arg(&scale_filter)
         .arg("-c:a")
         .arg("aac")
         .arg("-b:a")
         .arg(&audio_bitrate)
-        .arg("output.mp4")
+        .arg(&output_file)
         .output()
         .expect("failed to execute process");
     exit_on_error(&output);
@@ -93,4 +107,30 @@ fn exit_on_error(output: &Output) {
         io::stdout().write_all(&output.stderr).unwrap();
         exit(-1);
     }
+}
+
+fn get_video_duration(input_file: &str) -> usize {
+    let output = Command::new("ffprobe")
+        .arg("-v")
+        .arg("error")
+        .arg("-select_streams")
+        .arg("v:0")
+        .arg("-show_entries")
+        .arg("format=duration")
+        .arg("-of")
+        .arg("default=noprint_wrappers=1:nokey=1")
+        .arg(input_file)
+        .output()
+        .expect("failed to execute process");
+    exit_on_error(&output);
+
+    String::from_utf8(output.stdout)
+        .unwrap()
+        .split(".")
+        .next()
+        .unwrap()
+        .to_string()
+        .parse::<usize>()
+        .unwrap()
+        + 1
 }
