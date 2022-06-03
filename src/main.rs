@@ -42,7 +42,7 @@ fn main() {
 
     let audio_bitrate = format!("{}k", args.audio_bitrate);
 
-    let output_file = args.output_file.unwrap_or("out.mp4".to_owned());
+    let output_file = args.output_file.unwrap_or_else(|| "out.mp4".to_owned());
 
     let scale_filter = format!("scale=iw/{}:-1", args.div);
 
@@ -60,20 +60,13 @@ fn main() {
     println!("running ffmpeg pass 1");
     let mut output = Command::new("ffmpeg")
         .arg("-y")
-        .arg("-i")
-        .arg(&args.input_file)
-        .arg("-c:v")
-        .arg("libx264")
-        .arg("-b:v")
-        .arg(&video_bitrate)
-        .arg("-pass")
-        .arg("1")
-        .arg("-vf")
-        .arg(&scale_filter)
-        .arg("-vsync")
-        .arg("cfr")
-        .arg("-f")
-        .arg("null")
+        .args(["-i", &args.input_file])
+        .args(["-c:v", "libx264"])
+        .args(["-b:v", &video_bitrate])
+        .args(["-pass", "1"])
+        .args(["-vf", &scale_filter])
+        .args(["-vsync", "cfr"])
+        .args(["-f", "null"])
         .arg(dev_null)
         .output()
         .expect("failed to execute process");
@@ -82,20 +75,13 @@ fn main() {
     println!("running ffmpeg pass 2");
     output = Command::new("ffmpeg")
         .arg("-y")
-        .arg("-i")
-        .arg(&args.input_file)
-        .arg("-c:v")
-        .arg("libx264")
-        .arg("-b:v")
-        .arg(&video_bitrate)
-        .arg("-pass")
-        .arg("2")
-        .arg("-vf")
-        .arg(&scale_filter)
-        .arg("-c:a")
-        .arg("libopus")
-        .arg("-b:a")
-        .arg(&audio_bitrate)
+        .args(["-i", &args.input_file])
+        .args(["-c:v", "libx264"])
+        .args(["-b:v", &video_bitrate])
+        .args(["-pass", "2"])
+        .args(["-vf", &scale_filter])
+        .args(["-c:a", "libopus"])
+        .args(["-b:a", &audio_bitrate])
         .arg(&output_file)
         .output()
         .expect("failed to execute process");
@@ -126,7 +112,7 @@ fn get_video_duration(input_file: &str) -> usize {
 
     String::from_utf8(output.stdout)
         .unwrap()
-        .split(".")
+        .split('.')
         .next()
         .unwrap()
         .to_string()
