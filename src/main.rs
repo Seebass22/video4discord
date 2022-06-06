@@ -17,6 +17,10 @@ struct Args {
     #[clap(short, long, default_value_t = 7.999)]
     target_filesize: f32,
 
+    /// muxing overhead in percent
+    #[clap(short, long, default_value_t = 5.0)]
+    muxing_overhead: f32,
+
     #[clap(short)]
     input_file: String,
 
@@ -28,8 +32,9 @@ fn calculate_video_bitrate(
     video_duration: usize,
     target_filesize: f32,
     audio_bitrate: u16,
+    muxing_overhead: f32,
 ) -> usize {
-    let total_bitrate = (target_filesize * 0.9536 * 8192.0) / video_duration as f32;
+    let total_bitrate = (target_filesize * 1024.0 * 8.0 * muxing_overhead) / video_duration as f32;
     (total_bitrate - audio_bitrate as f32) as usize
 }
 
@@ -37,7 +42,12 @@ fn main() {
     let args = Args::parse();
 
     let video_duration = get_video_duration(&args.input_file);
-    let video_bitrate = calculate_video_bitrate(video_duration, args.target_filesize, args.audio_bitrate);
+    let video_bitrate = calculate_video_bitrate(
+        video_duration,
+        args.target_filesize,
+        args.audio_bitrate,
+        args.muxing_overhead,
+    );
     let video_bitrate = format!("{}k", video_bitrate);
 
     let audio_bitrate = format!("{}k", args.audio_bitrate);
