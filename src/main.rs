@@ -6,6 +6,7 @@ use std::process::{exit, Command, Output};
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Args {
+    // audio bitrate in Kbps
     #[clap(short, long, default_value_t = 32)]
     audio_bitrate: u16,
 
@@ -14,7 +15,7 @@ struct Args {
     div: u8,
 
     /// target filesize in MiB
-    #[clap(short, long, default_value_t = 7.999)]
+    #[clap(short, long, default_value_t = 8.0)]
     target_filesize: f32,
 
     /// muxing overhead in percent
@@ -29,13 +30,16 @@ struct Args {
 }
 
 fn calculate_video_bitrate(
-    video_duration: usize,
+    video_duration: f32,
     target_filesize: f32,
-    audio_bitrate: u16,
+    audio_bitrate: f32,
     muxing_overhead: f32,
 ) -> usize {
-    let total_bitrate = (target_filesize * 1024.0 * 8.0 * muxing_overhead) / video_duration as f32;
-    (total_bitrate - audio_bitrate as f32) as usize
+    // muxing_overhead is a percentage of video+audio data filesize, not of final filesize
+    // total_filesize = duration * (v_bitrate + a_bitrate) + mux_overhead  * duration * (v_bitrate + a_bitrate)
+    let mux = muxing_overhead / 100.0;
+    let total_filesize = target_filesize * 8192.0;
+    (((total_filesize / video_duration) - (mux + 1.0) * audio_bitrate) / (mux + 1.0)) as usize
 }
 
 fn main() {
@@ -43,9 +47,9 @@ fn main() {
 
     let video_duration = get_video_duration(&args.input_file);
     let video_bitrate = calculate_video_bitrate(
-        video_duration,
+        video_duration as f32,
         args.target_filesize,
-        args.audio_bitrate,
+        args.audio_bitrate as f32,
         args.muxing_overhead,
     );
     let video_bitrate = format!("{}k", video_bitrate);
