@@ -34,12 +34,12 @@ fn calculate_video_bitrate(
     target_filesize: f32,
     audio_bitrate: f32,
     muxing_overhead: f32,
-) -> usize {
+) -> u32 {
     // muxing_overhead is a percentage of video+audio data filesize, not of final filesize
     // total_filesize = duration * (v_bitrate + a_bitrate) + mux_overhead  * duration * (v_bitrate + a_bitrate)
     let mux = muxing_overhead / 100.0;
     let total_filesize = target_filesize * 8192.0;
-    (((total_filesize / video_duration) - (mux + 1.0) * audio_bitrate) / (mux + 1.0)) as usize
+    (((total_filesize / video_duration) - (mux + 1.0) * audio_bitrate) / (mux + 1.0)) as u32
 }
 
 fn main() {
