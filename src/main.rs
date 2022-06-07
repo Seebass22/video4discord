@@ -25,8 +25,8 @@ struct Args {
     #[clap(short)]
     input_file: String,
 
-    #[clap(short, long, required = false)]
-    output_file: Option<String>,
+    #[clap(short, default_value_t = String::from("out.mp4"))]
+    output_file: String,
 }
 
 fn calculate_video_bitrate(
@@ -55,8 +55,6 @@ fn main() {
     let video_bitrate = format!("{}k", video_bitrate);
 
     let audio_bitrate = format!("{}k", args.audio_bitrate);
-
-    let output_file = args.output_file.unwrap_or_else(|| "out.mp4".to_owned());
 
     let scale_filter = format!("scale=iw/{}:-1", args.div);
 
@@ -96,7 +94,7 @@ fn main() {
         .args(["-vf", &scale_filter])
         .args(["-c:a", "libopus"])
         .args(["-b:a", &audio_bitrate])
-        .arg(&output_file)
+        .arg(&args.output_file)
         .output()
         .expect("failed to execute process");
     exit_on_error(&output);
