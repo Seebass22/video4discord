@@ -6,7 +6,7 @@ use std::process::{exit, Command, Output};
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Args {
-    // audio bitrate in Kbps
+    /// audio bitrate in Kbps
     #[clap(short, long, default_value_t = 32)]
     audio_bitrate: u16,
 
