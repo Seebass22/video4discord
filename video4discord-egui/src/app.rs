@@ -1,8 +1,7 @@
 use video4discord::*;
 
 pub struct GUI {
-    // Example stuff:
-    input_file: String,
+    input_file: Option<String>,
     output_file: String,
     audio_bitrate: u16,
     muxing_overhead: f32,
@@ -13,7 +12,7 @@ pub struct GUI {
 impl Default for GUI {
     fn default() -> Self {
         Self {
-            input_file: "input.mp4".to_owned(),
+            input_file: None,
             output_file: "output.mp4".to_owned(),
             audio_bitrate: 32,
             muxing_overhead: 5.0,
@@ -45,22 +44,49 @@ impl eframe::App for GUI {
         });
 
         egui::CentralPanel::default().show(ctx, |ui| {
+            if ui.button("choose file").clicked() {
+                if let Some(path) = rfd::FileDialog::new().pick_file() {
+                    self.input_file = Some(path.display().to_string());
+                }
+            }
+
+
+            if let Some(input_file) = &self.input_file {
+                ui.label(input_file);
+            } else {
+                ui.label("no file selected");
+            }
+
+            ui.add(egui::Slider::new(&mut self.audio_bitrate, 6..=128).text("audio bitrate in Kbps (opus codec)"));
+            ui.add(egui::Slider::new(&mut self.muxing_overhead, 1.0..=30.0).text("expected muxing overhead %"));
+
+            ui.label("Divide X/Y resolution by:");
+            ui.horizontal(|ui| {
+                for value in [1, 2, 4, 6, 10] {
+                    if ui.selectable_value(&mut self.div, value, value.to_string()).clicked() {
+                    }
+                }
+            });
+
+
             if ui.button("run").clicked() {
-                let duration = get_video_duration(&self.input_file);
-                let video_bitrate = calculate_video_bitrate(
-                    duration as f32,
-                    self.target_filesize,
-                    self.audio_bitrate as f32,
-                    self.muxing_overhead,
-                );
-                run_ffmpeg(
-                    self.audio_bitrate,
-                    video_bitrate,
-                    self.div,
-                    self.target_filesize,
-                    &self.input_file,
-                    &self.output_file,
-                );
+                if let Some(input_file) = &self.input_file {
+                    let duration = get_video_duration(&input_file);
+                    let video_bitrate = calculate_video_bitrate(
+                        duration as f32,
+                        self.target_filesize,
+                        self.audio_bitrate as f32,
+                        self.muxing_overhead,
+                    );
+                    run_ffmpeg(
+                        self.audio_bitrate,
+                        video_bitrate,
+                        self.div,
+                        self.target_filesize,
+                        &input_file,
+                        &self.output_file,
+                    );
+                }
             }
         });
     }
