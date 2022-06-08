@@ -1,0 +1,18 @@
+[package]
+name = "video4discord_egui"
+default-run = "video4discord-egui"
+version = "0.1.0"
+authors = ["Sebastian Thümmel <sebastianthuemmel@yahoo.ca>"]
+edition = "2021"
+rust-version = "1.60"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[[bin]]
+name = "video4discord-egui"
+path = "src/main.rs"
+
+[dependencies]
+egui = "0.18.0"
+eframe = { version = "0.18.0" }
+video4discord = { path = "../video4discord" }
