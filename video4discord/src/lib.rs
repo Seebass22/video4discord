@@ -16,14 +16,10 @@ pub fn calculate_video_bitrate(
 
 pub fn get_video_duration(input_file: &str) -> usize {
     let output = Command::new("ffprobe")
-        .arg("-v")
-        .arg("error")
-        .arg("-select_streams")
-        .arg("v:0")
-        .arg("-show_entries")
-        .arg("format=duration")
-        .arg("-of")
-        .arg("default=noprint_wrappers=1:nokey=1")
+        .args(["-v", "error"])
+        .args(["-select_streams", "v:0"])
+        .args(["-show_entries", "format=duration"])
+        .args(["-of", "default=noprint_wrappers=1:nokey=1"])
         .arg(input_file)
         .output()
         .expect("failed to execute process");
