@@ -88,6 +88,50 @@ impl eframe::App for GUI {
                     );
                 }
             }
+
+            preview_files_being_dropped(ctx);
+            if !ctx.input().raw.dropped_files.is_empty() {
+                let file = ctx.input().raw.dropped_files[0].clone();
+                let info = if let Some(path) = &file.path {
+                    Some(path.display().to_string())
+                } else if !file.name.is_empty() {
+                    Some(file.name.clone())
+                } else {
+                    None
+                };
+                self.input_file = info;
+            }
         });
+    }
+}
+
+// https://github.com/emilk/egui/blob/218d4d4eeaa7f3c8495881d5e6555b14d8ab95eb/examples/file_dialog/src/main.rs
+fn preview_files_being_dropped(ctx: &egui::Context) {
+    use egui::*;
+
+    if !ctx.input().raw.hovered_files.is_empty() {
+        let mut text = "Dropping files:\n".to_owned();
+        for file in &ctx.input().raw.hovered_files {
+            if let Some(path) = &file.path {
+                text += &format!("\n{}", path.display());
+            } else if !file.mime.is_empty() {
+                text += &format!("\n{}", file.mime);
+            } else {
+                text += "\n???";
+            }
+        }
+
+        let painter =
+            ctx.layer_painter(LayerId::new(Order::Foreground, Id::new("file_drop_target")));
+
+        let screen_rect = ctx.input().screen_rect();
+        painter.rect_filled(screen_rect, 0.0, Color32::from_black_alpha(192));
+        painter.text(
+            screen_rect.center(),
+            Align2::CENTER_CENTER,
+            text,
+            TextStyle::Heading.resolve(&ctx.style()),
+            Color32::WHITE,
+        );
     }
 }
