@@ -1,17 +1,17 @@
-use clap::Parser;
+use clap::{ArgEnum, Parser};
 use video4discord::*;
 
 /// Reencode a video to be under 8MiB
-#[derive(Parser, Debug)]
+#[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
 struct Args {
     /// audio bitrate in Kbps
     #[clap(short, long, default_value_t = 32)]
     audio_bitrate: u16,
 
-    /// audio codec
-    #[clap(short = 'c', long, default_value_t = String::from("opus"))]
-    audio_codec: String,
+    /// audio codec: opus is more efficient, aac has better compatibility
+    #[clap(arg_enum, short = 'c', long, default_value_t = AudioCodec::Opus)]
+    audio_codec: AudioCodec,
 
     /// factor to divide X/Y resolution by
     #[clap(short, long, default_value_t = 2)]
@@ -32,6 +32,12 @@ struct Args {
     output_file: String,
 }
 
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ArgEnum)]
+enum AudioCodec {
+    Opus,
+    Aac,
+}
+
 fn main() {
     let args = Args::parse();
 
@@ -43,11 +49,16 @@ fn main() {
         args.muxing_overhead,
     );
 
+    let audio_codec = match args.audio_codec {
+        AudioCodec::Opus => "libopus",
+        AudioCodec::Aac => "aac",
+    };
+
     run_ffmpeg(
         AVOptions {
             audio_bitrate: args.audio_bitrate,
             video_bitrate,
-            audio_codec: args.audio_codec,
+            audio_codec: audio_codec.to_owned(),
         },
         args.div,
         args.target_filesize,

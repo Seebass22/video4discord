@@ -59,12 +59,6 @@ pub fn run_ffmpeg(
         "/dev/null"
     };
 
-    let audio_encoder = if av_options.audio_codec.to_lowercase() == "aac" {
-        "aac"
-    } else {
-        "libopus"
-    };
-
     println!("aiming for filesize < {}MiB", target_filesize);
     println!("scaling video down to 1/{} x/y resolution", div);
     println!("new audio bitrate: {}", &audio_bitrate);
@@ -93,7 +87,7 @@ pub fn run_ffmpeg(
         .args(["-b:v", &video_bitrate])
         .args(["-pass", "2"])
         .args(["-vf", &scale_filter])
-        .args(["-c:a", audio_encoder])
+        .args(["-c:a", &av_options.audio_codec])
         .args(["-b:a", &audio_bitrate])
         .arg(output_file)
         .output()
