@@ -9,6 +9,10 @@ struct Args {
     #[clap(short, long, default_value_t = 32)]
     audio_bitrate: u16,
 
+    /// audio codec
+    #[clap(short = 'c', long, default_value_t = String::from("opus"))]
+    audio_codec: String,
+
     /// factor to divide X/Y resolution by
     #[clap(short, long, default_value_t = 2)]
     div: u8,
@@ -40,8 +44,11 @@ fn main() {
     );
 
     run_ffmpeg(
-        args.audio_bitrate,
-        video_bitrate,
+        AVOptions {
+            audio_bitrate: args.audio_bitrate,
+            video_bitrate,
+            audio_codec: args.audio_codec,
+        },
         args.div,
         args.target_filesize,
         &args.input_file,

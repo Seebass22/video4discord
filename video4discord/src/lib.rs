@@ -36,22 +36,33 @@ pub fn get_video_duration(input_file: &str) -> usize {
         + 1
 }
 
+pub struct AVOptions {
+    pub audio_bitrate: u16,
+    pub video_bitrate: u32,
+    pub audio_codec: String,
+}
+
 pub fn run_ffmpeg(
-    audio_bitrate: u16,
-    video_bitrate: u32,
+    av_options: AVOptions,
     div: u8,
     target_filesize: f32,
     input_file: &str,
     output_file: &str,
 ) {
-    let video_bitrate = format!("{}k", video_bitrate);
-    let audio_bitrate = format!("{}k", audio_bitrate);
+    let video_bitrate = format!("{}k", av_options.video_bitrate);
+    let audio_bitrate = format!("{}k", av_options.audio_bitrate);
     let scale_filter = format!("scale=iw/{}:-1", div);
 
     let dev_null = if cfg!(target_os = "windows") {
         "NUL"
     } else {
         "/dev/null"
+    };
+
+    let audio_encoder = if av_options.audio_codec.to_lowercase() == "aac" {
+        "aac"
+    } else {
+        "libopus"
     };
 
     println!("aiming for filesize < {}MiB", target_filesize);
@@ -82,7 +93,7 @@ pub fn run_ffmpeg(
         .args(["-b:v", &video_bitrate])
         .args(["-pass", "2"])
         .args(["-vf", &scale_filter])
-        .args(["-c:a", "libopus"])
+        .args(["-c:a", audio_encoder])
         .args(["-b:a", &audio_bitrate])
         .arg(output_file)
         .output()
