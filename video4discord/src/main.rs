@@ -9,7 +9,7 @@ struct Args {
     #[clap(short, long, default_value_t = 64)]
     audio_bitrate: u16,
 
-    /// audio codec: opus is more efficient, aac has better compatibility
+    /// output audio codec to use. opus is more efficient, aac has better compatibility
     #[clap(arg_enum, short = 'c', long, default_value_t = AudioCodec::Opus)]
     audio_codec: AudioCodec,
 
@@ -21,10 +21,11 @@ struct Args {
     #[clap(short, long, default_value_t = 8.0)]
     target_filesize: f32,
 
-    /// muxing overhead in percent
+    /// expected muxing overhead in percent. very long videos may need a higher value
     #[clap(short, long, default_value_t = 5.0)]
     muxing_overhead: f32,
 
+    /// input filename
     #[clap(short)]
     input_file: String,
 
