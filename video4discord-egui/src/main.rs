@@ -9,7 +9,7 @@ fn main() {
         ..eframe::NativeOptions::default()
     };
     eframe::run_native(
-        "eframe template",
+        "video4discord-egui",
         native_options,
         Box::new(|cc| Box::new(GUI::new(cc))),
     );
