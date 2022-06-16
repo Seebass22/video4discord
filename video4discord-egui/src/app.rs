@@ -15,7 +15,7 @@ impl Default for GUI {
         Self {
             input_file: None,
             output_file: "".to_owned(),
-            audio_bitrate: 32,
+            audio_bitrate: 64,
             muxing_overhead: 5.0,
             target_filesize: 8.0,
             div: 2,
@@ -59,7 +59,7 @@ impl eframe::App for GUI {
 
             ui.add(
                 egui::Slider::new(&mut self.audio_bitrate, 6..=128)
-                    .text("audio bitrate in Kbps (opus codec)"),
+                    .text("audio bitrate in Kbps"),
             );
             ui.add(
                 egui::Slider::new(&mut self.muxing_overhead, 1.0..=30.0)
