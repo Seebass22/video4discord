@@ -5,7 +5,7 @@ use egui::Vec2;
 
 fn main() {
     let native_options = eframe::NativeOptions {
-        initial_window_size: Some(Vec2::new(800.0, 800.0)),
+        initial_window_size: Some(Vec2::new(768.0, 200.0)),
         ..eframe::NativeOptions::default()
     };
     eframe::run_native(
