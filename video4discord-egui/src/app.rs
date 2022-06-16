@@ -14,11 +14,12 @@ impl Default for GUI {
     fn default() -> Self {
         Self {
             input_file: None,
-            output_file: "output.mp4".to_owned(),
+            output_file: "".to_owned(),
             audio_bitrate: 32,
             muxing_overhead: 5.0,
             target_filesize: 8.0,
             div: 2,
+            audio_codec: "libopus".to_owned(),
         }
     }
 }
@@ -33,7 +34,6 @@ impl GUI {
 impl eframe::App for GUI {
     /// Called each time the UI needs repainting, which may be many times per second.
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
-
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
             egui::menu::bar(ui, |ui| {
                 ui.menu_button("File", |ui| {
@@ -51,24 +51,34 @@ impl eframe::App for GUI {
                 }
             }
 
-
             if let Some(input_file) = &self.input_file {
                 ui.label(input_file);
             } else {
                 ui.label("no file selected");
             }
 
-            ui.add(egui::Slider::new(&mut self.audio_bitrate, 6..=128).text("audio bitrate in Kbps (opus codec)"));
-            ui.add(egui::Slider::new(&mut self.muxing_overhead, 1.0..=30.0).text("expected muxing overhead %"));
+            ui.add(
+                egui::Slider::new(&mut self.audio_bitrate, 6..=128)
+                    .text("audio bitrate in Kbps (opus codec)"),
+            );
+            ui.add(
+                egui::Slider::new(&mut self.muxing_overhead, 1.0..=30.0)
+                    .text("expected muxing overhead %"),
+            );
 
-            ui.label("Divide X/Y resolution by:");
             ui.horizontal(|ui| {
+                ui.label("Divide X/Y resolution by:");
                 for value in [1, 2, 4, 6, 10] {
-                    if ui.selectable_value(&mut self.div, value, value.to_string()).clicked() {
-                    }
+                    ui.selectable_value(&mut self.div, value, value.to_string());
                 }
             });
 
+            ui.horizontal(|ui| {
+                ui.label("audio codec:");
+                for codec in ["aac", "libopus"] {
+                    ui.selectable_value(&mut self.audio_codec, codec.to_owned(), codec.to_owned());
+                }
+            });
 
             if ui.button("run").clicked() {
                 if let Some(input_file) = &self.input_file {
