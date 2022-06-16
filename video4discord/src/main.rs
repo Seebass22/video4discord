@@ -6,7 +6,7 @@ use video4discord::*;
 #[clap(author, version, about, long_about = None)]
 struct Args {
     /// audio bitrate in Kbps
-    #[clap(short, long, default_value_t = 32)]
+    #[clap(short, long, default_value_t = 64)]
     audio_bitrate: u16,
 
     /// audio codec: opus is more efficient, aac has better compatibility
