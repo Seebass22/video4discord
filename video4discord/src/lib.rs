@@ -1,4 +1,5 @@
 use std::io::{self, Write};
+use std::path::PathBuf;
 use std::process::{exit, Command, Output};
 
 pub fn calculate_video_bitrate(
@@ -99,5 +100,31 @@ fn exit_on_error(output: &Output) {
     if !output.status.success() {
         io::stdout().write_all(&output.stderr).unwrap();
         exit(-1);
+    }
+}
+
+pub fn add_underscore(filename: &str) -> String {
+    let path = PathBuf::from(filename);
+    let stem = path
+        .file_stem()
+        .unwrap()
+        .to_str()
+        .expect("Filename contains invalid Unicode. Rename the file first.");
+    let extension = path.extension().unwrap().to_str().unwrap();
+    format!("{}{}{}", stem, "_.", extension)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_add_underscore() {
+        let res = add_underscore("video.mp4");
+        let expected = String::from("video_.mp4");
+        assert_eq!(res, expected);
+
+        let res = add_underscore("video_.mp4");
+        let expected = String::from("video__.mp4");
+        assert_eq!(res, expected);
     }
 }

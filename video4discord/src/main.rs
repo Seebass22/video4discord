@@ -28,8 +28,9 @@ struct Args {
     #[clap(short)]
     input_file: String,
 
-    #[clap(short, default_value_t = String::from("out.mp4"))]
-    output_file: String,
+    /// output filename. defaults to input filename with trailing underscore
+    #[clap(short)]
+    output_file: Option<String>,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ArgEnum)]
@@ -54,6 +55,11 @@ fn main() {
         AudioCodec::Aac => "aac",
     };
 
+    let output_file = match args.output_file {
+        None => add_underscore(&args.input_file),
+        Some(filename) => filename,
+    };
+
     run_ffmpeg(
         AVOptions {
             audio_bitrate: args.audio_bitrate,
@@ -63,6 +69,6 @@ fn main() {
         args.div,
         args.target_filesize,
         &args.input_file,
-        &args.output_file,
+        &output_file,
     );
 }
