@@ -3,6 +3,7 @@ use video4discord::*;
 pub struct GUI {
     input_file: Option<String>,
     output_file: String,
+    output_folder: String,
     audio_bitrate: u16,
     muxing_overhead: f32,
     target_filesize: f32,
@@ -15,6 +16,7 @@ impl Default for GUI {
         Self {
             input_file: None,
             output_file: "".to_owned(),
+            output_folder: "".to_owned(),
             audio_bitrate: 64,
             muxing_overhead: 5.0,
             target_filesize: 8.0,
@@ -45,17 +47,33 @@ impl eframe::App for GUI {
         });
 
         egui::CentralPanel::default().show(ctx, |ui| {
-            if ui.button("choose file").clicked() {
-                if let Some(path) = rfd::FileDialog::new().pick_file() {
-                    self.input_file = Some(path.display().to_string());
+            ui.horizontal(|ui| {
+                if ui.button("choose file").clicked() {
+                    if let Some(path) = rfd::FileDialog::new().pick_file() {
+                        self.input_file = Some(path.display().to_string());
+                    }
                 }
-            }
 
-            if let Some(input_file) = &self.input_file {
-                ui.label(input_file);
-            } else {
-                ui.label("no file selected");
-            }
+                if let Some(input_file) = &self.input_file {
+                    ui.label(input_file);
+                } else {
+                    ui.label("no file selected");
+                }
+            });
+
+            ui.horizontal(|ui| {
+                if ui.button("choose output folder").clicked() {
+                    if let Some(path) = rfd::FileDialog::new().pick_folder() {
+                        self.output_folder = path.display().to_string();
+                    }
+                }
+
+                if self.output_folder != "" {
+                    ui.label(&self.output_folder);
+                } else {
+                    ui.label("no folder selected");
+                }
+            });
 
             ui.add(
                 egui::Slider::new(&mut self.audio_bitrate, 6..=128)
@@ -90,11 +108,15 @@ impl eframe::App for GUI {
                         self.muxing_overhead,
                     );
 
-                    let output_file = if self.output_file == "" {
+                    let mut output_file = if self.output_file == "" {
                         add_underscore(self.input_file.as_ref().unwrap())
                     } else {
                         self.output_file.clone()
                     };
+
+                    // TODO: allow windows paths
+                    output_file = format!("{}/{}", self.output_folder, output_file);
+                    println!("{}", output_file);
 
                     run_ffmpeg(
                         AVOptions {
