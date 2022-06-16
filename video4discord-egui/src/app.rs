@@ -7,6 +7,7 @@ pub struct GUI {
     muxing_overhead: f32,
     target_filesize: f32,
     div: u8,
+    audio_codec: String,
 }
 
 impl Default for GUI {
@@ -78,13 +79,23 @@ impl eframe::App for GUI {
                         self.audio_bitrate as f32,
                         self.muxing_overhead,
                     );
+
+                    let output_file = if self.output_file == "" {
+                        add_underscore(self.input_file.as_ref().unwrap())
+                    } else {
+                        self.output_file.clone()
+                    };
+
                     run_ffmpeg(
-                        self.audio_bitrate,
-                        video_bitrate,
+                        AVOptions {
+                            audio_bitrate: self.audio_bitrate,
+                            video_bitrate,
+                            audio_codec: self.audio_codec.clone(),
+                        },
                         self.div,
                         self.target_filesize,
                         &input_file,
-                        &self.output_file,
+                        &output_file,
                     );
                 }
             }
