@@ -78,8 +78,7 @@ impl eframe::App for GUI {
             });
 
             ui.add(
-                egui::Slider::new(&mut self.audio_bitrate, 6..=128)
-                    .text("audio bitrate in Kbps"),
+                egui::Slider::new(&mut self.audio_bitrate, 6..=128).text("audio bitrate in Kbps"),
             );
             ui.add(
                 egui::Slider::new(&mut self.muxing_overhead, 1.0..=30.0)
@@ -116,7 +115,9 @@ impl eframe::App for GUI {
                         self.output_file.clone()
                     };
 
-                    let output_path = [&self.output_folder, &output_file].iter().collect::<PathBuf>();
+                    let output_path = [&self.output_folder, &output_file]
+                        .iter()
+                        .collect::<PathBuf>();
 
                     run_ffmpeg(
                         AVOptions {
