@@ -14,6 +14,7 @@ path = "src/main.rs"
 
 [dependencies]
 egui = "0.18.0"
-eframe = { version = "0.18.0" }
+eframe = { version = "0.18.0", features = ["persistence"] }
 video4discord = { path = "../video4discord" }
 rfd = "0.8.4"
+serde = { version = "1", features = ["derive"] }
