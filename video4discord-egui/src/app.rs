@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use video4discord::*;
 
 pub struct GUI {
@@ -108,15 +110,13 @@ impl eframe::App for GUI {
                         self.muxing_overhead,
                     );
 
-                    let mut output_file = if self.output_file == "" {
+                    let output_file = if self.output_file == "" {
                         add_underscore(self.input_file.as_ref().unwrap())
                     } else {
                         self.output_file.clone()
                     };
 
-                    // TODO: allow windows paths
-                    output_file = format!("{}/{}", self.output_folder, output_file);
-                    println!("{}", output_file);
+                    let output_path = [&self.output_folder, &output_file].iter().collect::<PathBuf>();
 
                     run_ffmpeg(
                         AVOptions {
@@ -127,7 +127,7 @@ impl eframe::App for GUI {
                         self.div,
                         self.target_filesize,
                         &input_file,
-                        &output_file,
+                        output_path.to_str().expect("path contains invalid unicode"),
                     );
                 }
             }
