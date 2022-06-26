@@ -44,10 +44,15 @@ fn main() {
     let args = Args::parse();
 
     let video_duration = get_video_duration(&args.input_file);
+    let audio_bitrate = if video_contains_audio(&args.input_file) {
+        args.audio_bitrate
+    } else {
+        0
+    };
     let video_bitrate = calculate_video_bitrate(
         video_duration as f32,
         args.target_filesize,
-        args.audio_bitrate as f32,
+        audio_bitrate as f32,
         args.muxing_overhead,
     );
 
@@ -63,7 +68,7 @@ fn main() {
 
     run_ffmpeg(
         AVOptions {
-            audio_bitrate: args.audio_bitrate,
+            audio_bitrate,
             video_bitrate,
             audio_codec: audio_codec.to_owned(),
         },

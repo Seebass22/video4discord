@@ -37,6 +37,18 @@ pub fn get_video_duration(input_file: &str) -> usize {
         + 1
 }
 
+pub fn video_contains_audio(input_file: &str) -> bool {
+    let output = Command::new("ffprobe")
+        .args(["-v", "error"])
+        .args(["-select_streams", "a:0"])
+        .args(["-show_entries", "stream=codec_name"])
+        .arg(input_file)
+        .output()
+        .expect("failed to execute process");
+    exit_on_error(&output);
+    !output.stdout.is_empty()
+}
+
 pub struct AVOptions {
     pub audio_bitrate: u16,
     pub video_bitrate: u32,
@@ -58,6 +70,12 @@ pub fn run_ffmpeg(
         "NUL"
     } else {
         "/dev/null"
+    };
+
+    let audio_args = if av_options.audio_bitrate == 0 {
+        vec!["-an"]
+    } else {
+        vec!["-c:a", &av_options.audio_codec, "-b:a", &audio_bitrate]
     };
 
     println!("aiming for filesize < {}MiB", target_filesize);
@@ -88,8 +106,7 @@ pub fn run_ffmpeg(
         .args(["-b:v", &video_bitrate])
         .args(["-pass", "2"])
         .args(["-vf", &scale_filter])
-        .args(["-c:a", &av_options.audio_codec])
-        .args(["-b:a", &audio_bitrate])
+        .args(&audio_args)
         .arg(output_file)
         .output()
         .expect("failed to execute process");
