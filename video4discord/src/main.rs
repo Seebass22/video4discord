@@ -76,5 +76,6 @@ fn main() {
         args.target_filesize,
         &args.input_file,
         &output_file,
+        "/tmp/video4discord/ffmpeg2pass-0.log"
     );
 }

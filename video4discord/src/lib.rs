@@ -61,6 +61,7 @@ pub fn run_ffmpeg(
     target_filesize: f32,
     input_file: &str,
     output_file: &str,
+    log_file: &str,
 ) {
     let video_bitrate = format!("{}k", av_options.video_bitrate);
     let audio_bitrate = format!("{}k", av_options.audio_bitrate);
@@ -90,6 +91,7 @@ pub fn run_ffmpeg(
         .args(["-c:v", "libx264"])
         .args(["-b:v", &video_bitrate])
         .args(["-pass", "1"])
+        .args(["-passlogfile", log_file])
         .args(["-vf", &scale_filter])
         .args(["-vsync", "cfr"])
         .args(["-f", "null"])
@@ -105,6 +107,7 @@ pub fn run_ffmpeg(
         .args(["-c:v", "libx264"])
         .args(["-b:v", &video_bitrate])
         .args(["-pass", "2"])
+        .args(["-passlogfile", log_file])
         .args(["-vf", &scale_filter])
         .args(&audio_args)
         .arg(output_file)
