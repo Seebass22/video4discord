@@ -1,4 +1,5 @@
 use clap::{ArgEnum, Parser};
+use tempfile::tempdir;
 use video4discord::*;
 
 /// Reencode a video to be under 8MiB
@@ -66,6 +67,8 @@ fn main() {
         Some(filename) => filename,
     };
 
+    let log_dir = tempdir().expect("couldn't create temp dir");
+    let log_file = log_dir.path().join("ffmpeg2pass-0.log");
     run_ffmpeg(
         AVOptions {
             audio_bitrate,
@@ -76,6 +79,6 @@ fn main() {
         args.target_filesize,
         &args.input_file,
         &output_file,
-        "/tmp/video4discord/ffmpeg2pass-0.log"
+        log_file.to_str().unwrap(),
     );
 }
