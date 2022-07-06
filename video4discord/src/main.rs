@@ -27,7 +27,6 @@ struct Args {
     muxing_overhead: f32,
 
     /// input filename
-    #[clap(short)]
     input_file: String,
 
     /// output filename. defaults to input filename with trailing underscore
