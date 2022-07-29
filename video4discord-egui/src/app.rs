@@ -84,7 +84,7 @@ impl eframe::App for GUI {
                     }
                 }
 
-                if self.output_folder != "" {
+                if self.output_folder.is_empty() {
                     ui.label(&self.output_folder);
                 } else {
                     ui.label("no folder selected");
@@ -115,7 +115,7 @@ impl eframe::App for GUI {
 
             if ui.button("run").clicked() {
                 if let Some(input_file) = &self.input_file {
-                    let duration = get_video_duration(&input_file);
+                    let duration = get_video_duration(input_file);
                     let video_bitrate = calculate_video_bitrate(
                         duration as f32,
                         self.target_filesize,
@@ -123,7 +123,7 @@ impl eframe::App for GUI {
                         self.muxing_overhead,
                     );
 
-                    let output_file = if self.output_file == "" {
+                    let output_file = if self.output_file.is_empty() {
                         add_underscore(self.input_file.as_ref().unwrap())
                     } else {
                         self.output_file.clone()
@@ -141,8 +141,9 @@ impl eframe::App for GUI {
                         },
                         self.div,
                         self.target_filesize,
-                        &input_file,
+                        input_file,
                         output_path.to_str().expect("path contains invalid unicode"),
+                        "ffmpeg_log.txt",
                     );
                 }
             }
