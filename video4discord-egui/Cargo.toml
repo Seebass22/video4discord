@@ -16,3 +16,4 @@ path = "src/main.rs"
 egui = "0.18.0"
 eframe = { version = "0.18.0" }
 video4discord = { path = "../video4discord" }
+rfd = "0.8.4"
